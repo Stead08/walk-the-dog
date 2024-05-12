@@ -6,7 +6,6 @@ mod game;
 use crate::engine::GameLoop;
 use crate::game::WalkTheDog;
 use anyhow::Result;
-use gloo_utils::format::JsValueSerdeExt;
 use rand::Rng;
 use serde::Deserialize;
 use std::collections::HashMap;
