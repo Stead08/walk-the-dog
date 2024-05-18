@@ -264,6 +264,7 @@ dependencies = [
  "futures",
  "getrandom",
  "js-sys",
+ "log",
  "rand",
  "serde",
  "serde-wasm-bindgen",
