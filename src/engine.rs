@@ -123,18 +123,6 @@ impl Renderer {
             .expect("Drawing is throwing exceptions! Unrecoverable error.");
     }
 
-    pub fn draw_rect(&self, bounding_box: &Rect) {
-        self.context.set_stroke_style(&JsValue::from_str("#FF0000"));
-        self.context.begin_path();
-        self.context.rect(
-            bounding_box.x().into(),
-            bounding_box.y().into(),
-            bounding_box.width.into(),
-            bounding_box.height.into(),
-        );
-        self.context.stroke();
-    }
-
     #[allow(dead_code)]
     pub fn draw_text(&self, text: &str, location: &Point) -> Result<()> {
         self.context.set_font("16pt serif");
@@ -153,13 +141,13 @@ pub async fn load_image(source: &str) -> Result<HtmlImageElement> {
     let error_tx = Rc::clone(&success_tx);
     let success_callback = browser::closure_once(move || {
         if let Some(success_tx) = success_tx.lock().ok().and_then(|mut opt| opt.take()) {
-            success_tx.send(Ok(()));
+            success_tx.send(Ok(())).expect("Could not load image");
         }
     });
 
     let error_callback: Closure<dyn FnMut(JsValue)> = browser::closure_once(move |err| {
         if let Some(error_tx) = error_tx.lock().ok().and_then(|mut opt| opt.take()) {
-            error_tx.send(Err(anyhow!("Error Loading Image: {:#?}", err)));
+            let _ = error_tx.send(Err(anyhow!("Error Loading Image: {:#?}", err)));
         }
     });
 
@@ -222,7 +210,7 @@ impl GameLoop {
                 unsafe { draw_frame_rate(&renderer, frame_time) }
             }
 
-            browser::request_animation_frame(f.borrow().as_ref().unwrap());
+            let _ = browser::request_animation_frame(f.borrow().as_ref().unwrap());
         }));
 
         browser::request_animation_frame(
@@ -281,13 +269,13 @@ fn prepare_input() -> Result<UnboundedReceiver<KeyPress>> {
     let keydown_sender = Rc::new(RefCell::new(keydown_sender));
     let keyup_sender = Rc::clone(&keydown_sender);
     let onkeydown = browser::closure_wrap(Box::new(move |keycode: web_sys::KeyboardEvent| {
-        keydown_sender
+        let _ = keydown_sender
             .borrow_mut()
             .start_send(KeyPress::KeyDown(keycode));
     }) as Box<dyn FnMut(web_sys::KeyboardEvent)>);
 
     let onkeyup = browser::closure_wrap(Box::new(move |keycode: web_sys::KeyboardEvent| {
-        keyup_sender
+        let _ = keyup_sender
             .borrow_mut()
             .start_send(KeyPress::KeyUp(keycode));
     }) as Box<dyn FnMut(web_sys::KeyboardEvent)>);
@@ -304,7 +292,7 @@ pub fn add_click_handler(elem: HtmlElement) -> UnboundedReceiver<()> {
     let (mut click_sender, click_receiver) = unbounded();
 
     let on_click = browser::closure_wrap(Box::new(move || {
-        click_sender.start_send(());
+        let _ = click_sender.start_send(());
     }) as Box<dyn FnMut()>);
 
     elem.set_onclick(Some(on_click.as_ref().unchecked_ref()));
@@ -395,11 +383,11 @@ impl Audio {
     }
 
     pub fn play_sound(&self, sound: &Sound) -> Result<()> {
-        sound::play_sound(&self.context, &sound.buffer, sound::LOOPING::NO)
+        sound::play_sound(&self.context, &sound.buffer, sound::Looping::NO)
     }
 
     pub fn play_looping_sound(&self, sound: &Sound) -> Result<()> {
-        sound::play_sound(&self.context, &sound.buffer, sound::LOOPING::YES)
+        sound::play_sound(&self.context, &sound.buffer, sound::Looping::Yes)
     }
 }
 

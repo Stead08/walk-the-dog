@@ -890,7 +890,7 @@ impl WalkTheDogState<GameOver> {
     }
 
     fn new_game(self) -> WalkTheDogState<Ready> {
-        browser::hide_ui();
+        let _ = browser::hide_ui();
         WalkTheDogState {
             _state: Ready,
             walk: Walk::reset(self.walk),
