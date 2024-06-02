@@ -15,6 +15,11 @@ macro_rules! log {
         web_sys::console::log_1(&format!( $( $t)*).into())
     };
 }
+macro_rules! error {
+        ( $($t:tt)*) => {
+        web_sys::console::error_1(&format!( $( $t)*).into())
+    };
+}
 
 pub type LoopClosure = Closure<dyn FnMut(f64)>;
 pub fn window() -> Result<Window> {
@@ -170,4 +175,19 @@ pub fn find_html_element_by_id(id: &str) -> Result<HtmlElement> {
                 .dyn_into::<HtmlElement>()
                 .map_err(|err| anyhow!("Could not cast into Html Element {:#?}", err))
         })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
+
+    wasm_bindgen_test_configure!(run_in_browser);
+
+    #[wasm_bindgen_test]
+    async fn test_error_loading_json() {
+        let json = fetch_json("not_there.json").await;
+
+        assert!(json.is_err());
+    }
 }
