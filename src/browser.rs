@@ -1,6 +1,4 @@
-use crate::browser;
 use anyhow::{anyhow, Result};
-use futures::channel::mpsc::{unbounded, UnboundedReceiver};
 use js_sys::ArrayBuffer;
 use std::future::Future;
 use wasm_bindgen::closure::{Closure, WasmClosure, WasmClosureFnOnce};
@@ -152,16 +150,6 @@ fn find_ui() -> Result<Element> {
         doc.get_element_by_id("ui")
             .ok_or_else(|| anyhow!("UI element not found"))
     })
-}
-
-pub fn add_click_handler(elem: HtmlElement) -> UnboundedReceiver<()> {
-    let (mut click_sender, click_receiver) = unbounded();
-    let on_click = browser::closure_wrap(Box::new(move || {
-        click_sender.start_send(());
-    }) as Box<dyn FnMut()>);
-    elem.set_onclick(Some(on_click.as_ref().unchecked_ref()));
-    on_click.forget();
-    click_receiver
 }
 
 pub fn find_html_element_by_id(id: &str) -> Result<HtmlElement> {

@@ -869,7 +869,7 @@ impl WalkTheDogState<Walking> {
     fn end_game(self) -> WalkTheDogState<GameOver> {
         let receiver = browser::draw_ui("<button id='new_game'>New Game</button>")
             .and_then(|_unit| browser::find_html_element_by_id("new_game"))
-            .map(|element| engine::add_click_handler(element))
+            .map(engine::add_click_handler)
             .unwrap();
         WalkTheDogState {
             _state: GameOver {
@@ -1002,11 +1002,13 @@ impl Game for WalkTheDog {
     async fn initialize(&self) -> Result<Box<dyn Game>> {
         match self.machine {
             None => {
+                #[allow(deprecated)]
                 let sheet = browser::fetch_json("rhb.json").await?.into_serde()?;
                 let background = engine::load_image("BG.png").await?;
                 let stone = engine::load_image("Stone.png").await?;
 
                 let tiles = browser::fetch_json("tiles.json").await?;
+                #[allow(deprecated)]
                 let sprite_sheet = Rc::new(SpriteSheet::new(
                     tiles.into_serde::<Sheet>()?,
                     engine::load_image("tiles.png").await?,
@@ -1141,7 +1143,7 @@ mod tests {
             _state: GameOver {
                 new_game_event: receiver,
             },
-            walk: walk,
+            walk,
         };
 
         state.new_game();
