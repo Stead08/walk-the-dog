@@ -13,7 +13,7 @@ jobs:
           toolchain: 1.78.0
           target: wasm32-unknown-unknown
           components: clippy
-        run: cargo clippy
+      - run: cargo clippy
       - uses: actions/setup-node@v4
         with:
           node-version: '20.x'
