@@ -14,12 +14,10 @@ jobs:
           target: wasm32-unknown-unknown
           components: clippy
         run: cargo clippy
-      - name: install wasm-pack via node v20
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20.x'
-        run:
-          npm install -g wasm-pack
-          npm install
-          npm test
-          npm run build
+      - run: npm i -g wasm-pack
+      - run: npm install
+      - run: npm test
+      - run: npm run build
